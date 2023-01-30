@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <html>
+    <head>
+      <meta charset="utf-8" />
+      <title>Test API</title>
+    </head>
+    <body>
+      <h3>Test API</h3>
+      <button id="btnGetData">Get Data</button>
+      <pre id="preOutput"></pre>
+      <script>
+        const url = "http://localhost:5116/api/students";
+
+        var showResponse = function (object) {
+          document.querySelector("#preOutput").innerHTML = JSON.stringify(
+            object,
+            null,
+            4
+          );
+        };
+
+        const button = document.querySelector("#btnGetData");
+        button.addEventListener("click", (e) => {
+          getData();
+        });
+
+        var getData = async function () {
+          await fetch(url)
+            .then((response) => {
+              return response.json();
+            })
+            .then((data) => {
+              showResponse(data);
+            });
+
+          return false;
+        };
+      </script>
+    </body>
+  </html>
+</html>
