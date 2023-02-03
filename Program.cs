@@ -1,8 +1,3 @@
-using Microsoft.AspNetCore.Cors;
-using Microsoft.EntityFrameworkCore;
-using StudentsApi.Data;
-using StudentsApi.Models;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -32,51 +27,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/api/students", [EnableCors("Policy")] async (SchoolDbContext db) =>
-    await db.Students.ToListAsync());
+var students = app.MapGroup("/api/students");
 
-app.MapGet("/api/students/school/{school}", [EnableCors("Policy")] async (string school, SchoolDbContext db) =>
-    await db.Students.Where(t => t.School!.ToLower() == school.ToLower()).ToListAsync());
-
-app.MapGet("/api/students/{id}", [EnableCors("Policy")] async (int id, SchoolDbContext db) =>
-    await db.Students.FindAsync(id)
-        is Student student ? Results.Ok(student) : Results.NotFound());
-
-app.MapPost("/api/students", [EnableCors("Policy")] async (Student student, SchoolDbContext db) =>
-{
-    db.Students.Add(student);
-    await db.SaveChangesAsync();
-
-    return Results.Created($"/students/{student.StudentId}", student);
-});
-
-app.MapPut("/api/students/{id}", [EnableCors("Policy")] async (int id, Student inputStudent, SchoolDbContext db) =>
-{
-    var student = await db.Students.FindAsync(id);
-
-    if (student is null) return Results.NotFound();
-
-    student.FirstName = inputStudent.FirstName;
-    student.LastName = inputStudent.LastName;
-    student.School = inputStudent.School;
-
-    await db.SaveChangesAsync();
-
-    return Results.NoContent();
-});
-
-app.MapDelete("/api/students/{id}", [EnableCors("Policy")] async (int id, SchoolDbContext db) =>
-{
-    if (await db.Students.FindAsync(id) is Student student)
-    {
-        db.Students.Remove(student);
-        await db.SaveChangesAsync();
-        return Results.Ok(student);
-    }
-
-    return Results.NotFound();
-});
-
+app.MapGet("/", StudentService.GetAllStudents);
+app.MapGet("/school/{school}", StudentService.GeStudentsBySchool);
+app.MapGet("/{id}", StudentService.GetStudentById);
+app.MapPost("/", StudentService.InsertStudent);
+app.MapPut("/{id}", StudentService.UpdateStudent);
+app.MapDelete("/{id}", StudentService.DeleteStudent);
 
 app.Run();
 
